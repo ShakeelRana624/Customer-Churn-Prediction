@@ -7,10 +7,12 @@ import joblib
 import warnings
 from preprocess import preprocess_input
 import os
+from mangum import Mangum
 
 warnings.filterwarnings('ignore')
 
 app = FastAPI(title="Customer Churn Prediction API")
+handler = Mangum(app)
 
 # Setup templates directory
 base_dir = os.path.dirname(os.path.abspath(__file__))
