@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Predictor</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        
+        <!-- Header -->
+        <div class="bg-indigo-600 px-8 py-6 text-white text-center">
+            <h1 class="text-3xl font-extrabold tracking-tight">Customer Churn Prediction</h1>
+            <p class="mt-2 text-indigo-100">Enter customer details below to predict if they are likely to churn.</p>
+        </div>
+
+        <div class="p-8">
+            <!-- Results Section -->
+            {% if result %}
+            <div class="mb-8 p-6 rounded-xl border {{ 'bg-red-50 border-red-200' if result == 'Yes' else 'bg-green-50 border-green-200' }} shadow-sm flex flex-col items-center">
+                <h2 class="text-2xl font-bold {{ 'text-red-700' if result == 'Yes' else 'text-green-700' }} mb-2">
+                    Prediction: {{ "Customer is likely to Churn" if result == "Yes" else "Customer is likely to Stay" }}
+                </h2>
+                <div class="flex items-center space-x-2">
+                    <span class="text-gray-600 font-medium">Churn Probability:</span>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold {{ 'bg-red-200 text-red-800' if result == 'Yes' else 'bg-green-200 text-green-800' }}">
+                        {{ probability }}%
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+
+            <form action="/predict_form" method="POST" class="space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Demographics -->
+                    <div class="col-span-full border-b pb-2 mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800">Demographics</h3>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                        <select name="gender" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="Female" {% if form_data and form_data.gender == 'Female' %}selected{% endif %}>Female</option>
+                            <option value="Male" {% if form_data and form_data.gender == 'Male' %}selected{% endif %}>Male</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Senior Citizen</label>
+                        <select name="SeniorCitizen" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="0" {% if form_data and form_data.SeniorCitizen == 0 %}selected{% endif %}>No (0)</option>
+                            <option value="1" {% if form_data and form_data.SeniorCitizen == 1 %}selected{% endif %}>Yes (1)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Partner</label>
+                        <select name="Partner" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.Partner == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.Partner == 'Yes' %}selected{% endif %}>Yes</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Dependents</label>
+                        <select name="Dependents" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.Dependents == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.Dependents == 'Yes' %}selected{% endif %}>Yes</option>
+                        </select>
+                    </div>
+
+
+                    <!-- Services -->
+                    <div class="col-span-full border-b pb-2 mt-4 mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800">Services & Security</h3>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Service</label>
+                        <select name="PhoneService" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.PhoneService == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.PhoneService == 'Yes' %}selected{% endif %}>Yes</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Multiple Lines</label>
+                        <select name="MultipleLines" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.MultipleLines == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.MultipleLines == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No phone service" {% if form_data and form_data.MultipleLines == 'No phone service' %}selected{% endif %}>No phone service</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Internet Service</label>
+                        <select name="InternetService" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="DSL" {% if form_data and form_data.InternetService == 'DSL' %}selected{% endif %}>DSL</option>
+                            <option value="Fiber optic" {% if form_data and form_data.InternetService == 'Fiber optic' %}selected{% endif %}>Fiber optic</option>
+                            <option value="No" {% if form_data and form_data.InternetService == 'No' %}selected{% endif %}>No</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Online Security</label>
+                        <select name="OnlineSecurity" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.OnlineSecurity == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.OnlineSecurity == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No internet service" {% if form_data and form_data.OnlineSecurity == 'No internet service' %}selected{% endif %}>No internet service</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Online Backup</label>
+                        <select name="OnlineBackup" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.OnlineBackup == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.OnlineBackup == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No internet service" {% if form_data and form_data.OnlineBackup == 'No internet service' %}selected{% endif %}>No internet service</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Device Protection</label>
+                        <select name="DeviceProtection" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.DeviceProtection == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.DeviceProtection == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No internet service" {% if form_data and form_data.DeviceProtection == 'No internet service' %}selected{% endif %}>No internet service</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tech Support</label>
+                        <select name="TechSupport" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.TechSupport == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.TechSupport == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No internet service" {% if form_data and form_data.TechSupport == 'No internet service' %}selected{% endif %}>No internet service</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Streaming TV</label>
+                        <select name="StreamingTV" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.StreamingTV == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.StreamingTV == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No internet service" {% if form_data and form_data.StreamingTV == 'No internet service' %}selected{% endif %}>No internet service</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Streaming Movies</label>
+                        <select name="StreamingMovies" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.StreamingMovies == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.StreamingMovies == 'Yes' %}selected{% endif %}>Yes</option>
+                            <option value="No internet service" {% if form_data and form_data.StreamingMovies == 'No internet service' %}selected{% endif %}>No internet service</option>
+                        </select>
+                    </div>
+
+                    <!-- Account Info -->
+                    <div class="col-span-full border-b pb-2 mt-4 mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800">Account & Billing</h3>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contract</label>
+                        <select name="Contract" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="Month-to-month" {% if form_data and form_data.Contract == 'Month-to-month' %}selected{% endif %}>Month-to-month</option>
+                            <option value="One year" {% if form_data and form_data.Contract == 'One year' %}selected{% endif %}>One year</option>
+                            <option value="Two year" {% if form_data and form_data.Contract == 'Two year' %}selected{% endif %}>Two year</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Paperless Billing</label>
+                        <select name="PaperlessBilling" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="No" {% if form_data and form_data.PaperlessBilling == 'No' %}selected{% endif %}>No</option>
+                            <option value="Yes" {% if form_data and form_data.PaperlessBilling == 'Yes' %}selected{% endif %}>Yes</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                        <select name="PaymentMethod" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                            <option value="Electronic check" {% if form_data and form_data.PaymentMethod == 'Electronic check' %}selected{% endif %}>Electronic check</option>
+                            <option value="Mailed check" {% if form_data and form_data.PaymentMethod == 'Mailed check' %}selected{% endif %}>Mailed check</option>
+                            <option value="Bank transfer (automatic)" {% if form_data and form_data.PaymentMethod == 'Bank transfer (automatic)' %}selected{% endif %}>Bank transfer (automatic)</option>
+                            <option value="Credit card (automatic)" {% if form_data and form_data.PaymentMethod == 'Credit card (automatic)' %}selected{% endif %}>Credit card (automatic)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tenure (months)</label>
+                        <input type="number" name="tenure" min="0" value="{{ form_data.tenure if form_data else '1' }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Charges ($)</label>
+                        <input type="number" step="0.01" name="MonthlyCharges" value="{{ form_data.MonthlyCharges if form_data else '50.00' }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Total Charges ($)</label>
+                        <input type="number" step="0.01" name="TotalCharges" value="{{ form_data.TotalCharges if form_data else '50.00' }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border" required>
+                    </div>
+
+                </div>
+
+                <div class="mt-8">
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                        Predict Churn
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
